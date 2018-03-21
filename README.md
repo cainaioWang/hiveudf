@@ -44,7 +44,7 @@ A list of user defined functions are collected here for Hive and Spark SQL.
 For streaming function by python, follow steps below.
 ```
 hdfs dfs -mkdir /apps/hive/scripts
-hdfs dfs -put word_count.py /apps/hive/scripts
-hive -f hive_udf.sql
+hdfs dfs -put hive_udf_addfile.py /apps/hive/scripts
+hive -f hive_udf_addfile.sql
 ```
 

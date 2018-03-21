@@ -8,7 +8,7 @@ tblproperties("skip.header.line.count"="1");
 load data local inpath "hive_udf_addfile.csv" into table py_udf_test;
 select * from py_udf_test limit 5;
 
-add file hive_udf_addfile.py;
+add file /apps/hive/scripts/hive_udf_addfile.py;
 
 select
 transform (id, col1, col2, col3)

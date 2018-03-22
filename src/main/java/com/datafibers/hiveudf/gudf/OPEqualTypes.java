@@ -2,13 +2,12 @@ package com.datafibers.hiveudf.gudf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 @Description(name = "=", value = "a _FUNC_ b - Returns TRUE if a equals b and false otherwise")
-public class GenericUDFOPEqualTypes extends GenericUDFBaseCompare {
-  public GenericUDFOPEqualTypes(){
+public class OPEqualTypes extends GenericUDFBaseCompare {
+  public OPEqualTypes(){
     this.opName = "EQUAL";
     this.opDisplayName = "=";
   }

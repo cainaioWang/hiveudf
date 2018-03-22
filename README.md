@@ -2,6 +2,10 @@
 
 A list of user defined functions are collected here for Hive and Spark SQL.
 
+Note:
+* UDAF class is deprecated will move to generic interface.
+
+
 ## For Development:
 
 1. Build the JAR:

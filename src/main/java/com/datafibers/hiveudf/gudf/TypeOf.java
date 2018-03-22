@@ -7,7 +7,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 
-public class GenericUDFTypeof extends GenericUDF {
+public class TypeOf extends GenericUDF {
   private final Text output = new Text();
 
   @Override

@@ -7,14 +7,12 @@ import org.apache.hadoop.hive.ql.exec.UDF;
  * Find the 0-indexed argument with the largest value.
  */
 
-/**
- * 返回最大值 很简单
- */
-@Description(name = "udfargmax",
-             value = "_FUNC_(double, double, ...) - Find the index with the largest value",
-    extended = "Example:\n"
-             + "  > SELECT ARGMAX(foo, bar) FROM users;\n")
-  public class UDFArgMax extends UDF {
+@Description(
+        name = "udfargmax",
+        value = "_FUNC_(double, double, ...) - Find the index with the largest value",
+        extended = "Example:\n" + "  > SELECT ARGMAX(foo, bar) FROM users;\n"
+)
+  public class ArgMax extends UDF {
     public Integer evaluate(Double... args) {
       Integer which_max = null;
       Double max_val = Double.NEGATIVE_INFINITY;

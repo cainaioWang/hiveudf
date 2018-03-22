@@ -16,12 +16,12 @@ A list of user defined functions are collected here for Hive and Spark SQL.
 
 3. Execute:
     ```
-    create temporary function my_lower as 'com.datafibers.hiveudf.CustomLower';
+    create temporary function str_lower as 'com.datafibers.hiveudf.udf.StringLower';
     ```
 
 4. Execute:
     ```
-    select my_lower("UPPER CASE LETTERS");
+    select str_lower("UPPER CASE LETTERS");
     ```
 
 ## For Deployment:
@@ -35,10 +35,16 @@ A list of user defined functions are collected here for Hive and Spark SQL.
     ```
 2. In beeline, create/register the function
     ```c
-    CREATE FUNCTION my_lower AS 'com.datafibers.hiveudf.CustomLower' USING JAR 'hdfs:////apps/hive/functions/df-hiveudf-1.0-SNAPSHOT.jar';
+    DROP FUNCTION IF EXISTS str_lower;
+    DROP FUNCTION IF EXISTS array_contains;
+    CREATE FUNCTION str_lower AS 'com.datafibers.hiveudf.udf.StringLower' USING JAR 'hdfs:////apps/hive/functions/df-hiveudf-1.0-SNAPSHOT.jar';
+    CREATE FUNCTION array_contains AS 'com.datafibers.hiveudf.gudf.ArrayContains' USING JAR 'hdfs:////apps/hive/functions/df-hiveudf-1.0-SNAPSHOT.jar';
     ```
 
 3. After that, you can use the functions like hive build-in functions.
+    ```c
+    select str_lower(name), work_place from employee where array_contains(work_place, 'Toronto');
+    ```
 
 ## For Streaming Function
 For streaming function by python, follow steps below.

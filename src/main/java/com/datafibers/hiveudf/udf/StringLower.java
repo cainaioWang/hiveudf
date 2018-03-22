@@ -1,7 +1,5 @@
 package com.datafibers.hiveudf.udf;
 
-/* Sample UDF sample from the Hive documentation Wiki. */
- 
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
  

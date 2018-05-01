@@ -1,19 +1,28 @@
 package com.datafibers.hiveudf.gudf;
 
-import java.util.List;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.io.BooleanWritable;
 
 public class ArrayContains extends GenericUDF {
 
-    ListObjectInspector listOI;
-    StringObjectInspector elementOI;
+    private static final int ARRAY_IDX = 0;
+    private static final int VALUE_IDX = 1;
+    private static final int ARG_COUNT = 2; // Number of arguments to this UDF
+    private static final String FUNC_NAME = "ARRAYCONTAINS"; // External Name
+
+    private transient ObjectInspector valueOI;
+    private transient ListObjectInspector arrayOI;
+    private transient ObjectInspector arrayElementOI;
+    private BooleanWritable result;
 
     @Override
     public String getDisplayString(String[] arg0) {
@@ -22,44 +31,77 @@ public class ArrayContains extends GenericUDF {
 
     @Override
     public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-        if (arguments.length != 2) {
-            throw new UDFArgumentLengthException("arrayContains() only takes 2 arguments: List<T>, T");
-        }
-        // 1. Check we received the right object types.
-        ObjectInspector a = arguments[0];
-        ObjectInspector b = arguments[1];
-        if (!(a instanceof ListObjectInspector) || !(b instanceof StringObjectInspector)) {
-            throw new UDFArgumentException("first argument must be a list / array, second argument must be a string");
-        }
-        this.listOI = (ListObjectInspector) a;
-        this.elementOI = (StringObjectInspector) b;
-
-        // 2. Check that the list contains strings
-        if(!(listOI.getListElementObjectInspector() instanceof StringObjectInspector)) {
-            throw new UDFArgumentException("first argument must be a list of strings");
+        // Check if two arguments were passed
+        if (arguments.length != ARG_COUNT) {
+            throw new UDFArgumentException(
+                    "The function " + FUNC_NAME + " accepts "
+                            + ARG_COUNT + " arguments.");
         }
 
-        // the return type of our function is a boolean, so we provide the correct object inspector
-        return PrimitiveObjectInspectorFactory.javaBooleanObjectInspector;
+        // Check if ARRAY_IDX argument is of category LIST
+        if (!arguments[ARRAY_IDX].getCategory().equals(Category.LIST)) {
+            throw new UDFArgumentTypeException(ARRAY_IDX,
+                    "\"" + org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME + "\" "
+                            + "expected at function ARRAY_CONTAINS, but "
+                            + "\"" + arguments[ARRAY_IDX].getTypeName() + "\" "
+                            + "is found");
+        }
+
+        arrayOI = (ListObjectInspector) arguments[ARRAY_IDX];
+        arrayElementOI = arrayOI.getListElementObjectInspector();
+
+        valueOI = arguments[VALUE_IDX];
+
+        // Check if list element and value are of same type
+        if (!ObjectInspectorUtils.compareTypes(arrayElementOI, valueOI)) {
+            throw new UDFArgumentTypeException(VALUE_IDX,
+                    "\"" + arrayElementOI.getTypeName() + "\""
+                            + " expected at function ARRAY_CONTAINS, but "
+                            + "\"" + valueOI.getTypeName() + "\""
+                            + " is found");
+        }
+
+        // Check if the comparison is supported for this type
+        if (!ObjectInspectorUtils.compareSupported(valueOI)) {
+            throw new UDFArgumentException("The function " + FUNC_NAME
+                    + " does not support comparison for "
+                    + "\"" + valueOI.getTypeName() + "\""
+                    + " types");
+        }
+
+        result = new BooleanWritable(false);
+
+        return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
     }
 
     @Override
     public Object evaluate(DeferredObject[] arguments) throws HiveException {
 
-        // get the list and string from the deferred objects using the object inspectors
-        List<String> list = (List<String>) this.listOI.getList(arguments[0].get());
-        String arg = elementOI.getPrimitiveJavaObject(arguments[1].get());
+        result.set(false);
 
-        // check for nulls
-        if (list == null || arg == null) {
-            return null;
+        Object array = arguments[ARRAY_IDX].get();
+        Object value = arguments[VALUE_IDX].get();
+
+        int arrayLength = arrayOI.getListLength(array);
+
+        // Check if array is null or empty or value is null
+        if (value == null || arrayLength <= 0) {
+            return result;
         }
 
-        // see if our list contains the value we need
-        for(String s: list) {
-            if (arg.equals(s)) return new Boolean(true);
+        // Compare the value to each element of array until a match is found
+        for (int i=0; i<arrayLength; ++i) {
+            Object listElement = arrayOI.getListElement(array, i);
+            if (listElement != null) {
+                if (ObjectInspectorUtils.compare(value, valueOI,
+                        listElement, arrayElementOI) == 0) {
+                    result.set(true);
+                    break;
+                }
+            }
         }
-        return new Boolean(false);
+
+        return result;
     }
 
 }

@@ -40,14 +40,14 @@ Note:
 2. In beeline, create/register the function
     ```c
     DROP FUNCTION IF EXISTS str_lower;
-    DROP FUNCTION IF EXISTS array_contains;
+    DROP FUNCTION IF EXISTS arraycontains;
     CREATE FUNCTION str_lower AS 'com.datafibers.hiveudf.udf.StringLower' USING JAR 'hdfs:////apps/hive/functions/df-hiveudf-1.0-SNAPSHOT.jar';
-    CREATE FUNCTION array_contains AS 'com.datafibers.hiveudf.gudf.ArrayContains' USING JAR 'hdfs:////apps/hive/functions/df-hiveudf-1.0-SNAPSHOT.jar';
+    CREATE FUNCTION arraycontains AS 'com.datafibers.hiveudf.gudf.ArrayContains' USING JAR 'hdfs:////apps/hive/functions/df-hiveudf-1.0-SNAPSHOT.jar';
     ```
 
 3. After that, you can use the functions like hive build-in functions.
     ```c
-    select str_lower(name), work_place from employee where array_contains(work_place, 'Toronto');
+    select str_lower(name), work_place from employee where arraycontains(work_place, 'Toronto');
     ```
 
 ## For Streaming Function

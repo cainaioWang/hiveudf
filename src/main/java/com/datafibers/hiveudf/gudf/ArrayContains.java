@@ -12,6 +12,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
 
+@Description(name = "arraycontains",
+        value="_FUNC_(array, value) - Returns TRUE if the array contains value.",
+        extended="Example:\n"
+                + "  > SELECT _FUNC_(array(1, 2, 3), 2) FROM src LIMIT 1;\n"
+                + "  true")
 public class ArrayContains extends GenericUDF {
 
     private static final int ARRAY_IDX = 0;
@@ -23,11 +28,6 @@ public class ArrayContains extends GenericUDF {
     private transient ListObjectInspector arrayOI;
     private transient ObjectInspector arrayElementOI;
     private BooleanWritable result;
-
-    @Override
-    public String getDisplayString(String[] arg0) {
-        return "arrayContains()"; // this should probably be better
-    }
 
     @Override
     public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -102,6 +102,13 @@ public class ArrayContains extends GenericUDF {
         }
 
         return result;
+    }
+
+    @Override
+    public String getDisplayString(String[] children) { // display in explain statement
+        assert (children.length == ARG_COUNT);
+        return "array_contains(" + children[ARRAY_IDX] + ", "
+                + children[VALUE_IDX] + ")";
     }
 
 }

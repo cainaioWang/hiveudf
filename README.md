@@ -37,17 +37,24 @@ Note:
     cp df-hiveudf-1.0-SNAPSHOT.jar /tmp
     hdfs dfs -put -f /tmp/df-hiveudf-1.0-SNAPSHOT.jar /apps/hive/functions
     ```
-2. In beeline, create/register the function
+2. In beeline, create/register/check the function
     ```c
     DROP FUNCTION IF EXISTS str_lower;
     DROP FUNCTION IF EXISTS arraycontains;
     CREATE FUNCTION str_lower AS 'com.datafibers.hiveudf.udf.StringLower' USING JAR 'hdfs:////apps/hive/functions/df-hiveudf-1.0-SNAPSHOT.jar';
     CREATE FUNCTION arraycontains AS 'com.datafibers.hiveudf.gudf.ArrayContains' USING JAR 'hdfs:////apps/hive/functions/df-hiveudf-1.0-SNAPSHOT.jar';
+    DESC FUNCTION arraycontains;
+    DESC FUNCTION EXTENDED arraycontains;
     ```
 
 3. After that, you can use the functions like hive build-in functions.
     ```c
     select str_lower(name), work_place from employee where arraycontains(work_place, 'Toronto');
+    ```
+
+4. Check query explain
+    ```c
+    explain select str_lower(name), work_place from employee where arraycontains(work_place, 'Toronto');
     ```
 
 ## For Streaming Function
